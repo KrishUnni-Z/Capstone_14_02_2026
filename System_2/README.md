@@ -190,20 +190,6 @@ Integrity mean score   : ~0.49
 
 ---
 
-## Roadmap
-
-| Milestone | Date |
-|---|---|
-| PoC complete | Mar 17, 2026 |
-| Full dataset handoff from System 3 | Apr 2, 2026 |
-| Full build — 3 LLMs + ensemble | Apr–May, 2026 |
-| Final demo | May 5, 2026 |
-
-**Full build architecture (April):**
-Three LLMs in parallel (DeepSeek-R1 14B, Qwen-QwQ 32B, Llama 3.3 70B via Groq API) feeding a stacked ElasticNet meta-learner across all 4 dimensions with proper ground truth labels.
-
----
-
 ## Troubleshooting
 
 **`ollama serve` — address already in use**
