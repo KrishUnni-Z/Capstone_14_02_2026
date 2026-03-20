@@ -252,8 +252,8 @@ with open(GOALS_CONFIG_JSON, "w", encoding="utf-8") as f:
 print(f"\nPeriod records       : {len(output_records)}")
 print(f"Goal config records  : {len(goals_config_records)}")
 
-print(f"\n✓ Saved {OUTPUT_JSON}")
-print(f"✓ Saved {GOALS_CONFIG_JSON}")
+print(f"\n Saved {OUTPUT_JSON}")
+print(f" Saved {GOALS_CONFIG_JSON}")
 print("\nThis is aligned with System 3:")
 print("- load raw data")
 print("- validate and clean it")
