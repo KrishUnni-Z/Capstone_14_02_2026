@@ -1,6 +1,6 @@
 """
 03_llm_predictions_poc.py — v4 (all 4 dimensions)
-LLM scores all 4 dimensions per goal via Ollama REST API.
+LLM now scores all 4 dimensions per goal via Ollama REST API.
 """
 
 import pandas as pd
@@ -27,19 +27,36 @@ def build_prompt(row, rule_row):
     efficiency = row["allocation_efficiency_ratio"]
     quantity   = row["delivered_output_quantity"]
 
-    return f"""Score this goal 0.0-1.0 on 4 dimensions.
+    return f"""You are scoring an organisational goal across 4 dimensions. Use the FULL 0.0-1.0 scale for each.
 
-DATA: current={observed:.2f} target={target:.2f} gap={variance:.2f} trend={slope:.4f} projected={projected:.2f} quality={quality:.2f} alloc={alloc_pct:.1%} efficiency={efficiency:.3f}
-RULE SCORES: relevance={rule_row['relevance_rule']:.2f} coherence={rule_row['coherence_rule']:.2f} integrity={rule_row['integrity_rule']:.2f}
+GOAL DATA (period 12 of 24):
+  Current value      : {observed:.3f}
+  Target (period 24) : {target:.3f}
+  Gap remaining      : {variance:.3f}
+  Trend/period       : {slope:.4f}
+  Projected @ P24    : {projected:.3f}
+  Output quality     : {quality:.2f}
+  Output quantity    : {quantity:.1f}
+  Budget allocation  : {alloc_pct:.1%} of parent
+  Efficiency ratio   : {efficiency:.3f}
+  Rule-based scores  : relevance={rule_row['relevance_rule']:.2f}  coherence={rule_row['coherence_rule']:.2f}  integrity={rule_row['integrity_rule']:.2f}
 
-DIMENSIONS:
-relevance: is allocation justified? (1=optimal band, 0=severely over/under)
-coherence: allocation consistent with goals? (1=green stable, 0=misaligned)
-integrity: outcomes match allocation? (1=full delivery, 0=poor vs spend)
-attainability: will goal hit target by period 24? (1=certain, 0=very unlikely)
+SCORING DEFINITIONS:
+  RELEVANCE  (0-1): Is the allocation level justified? 
+    1.0 = perfectly in optimal band | 0.5 = orange band | 0.1 = severely over/under funded
+  COHERENCE  (0-1): Is this allocation internally consistent with goals?
+    1.0 = green band, stable | 0.5 = mixed signals | 0.1 = misaligned across hierarchy
+  INTEGRITY  (0-1): Do outcomes match what the allocation should produce?
+    1.0 = outcomes fully match expected | 0.5 = partial delivery | 0.1 = poor delivery vs spend
+  ATTAINABILITY (0-1): Will this goal hit its target by period 24?
+    1.0 = certain to hit | 0.5 = uncertain | 0.1 = very unlikely
 
-Reply ONLY with this JSON, one line:
-{{"relevance": 0.XX, "coherence": 0.XX, "integrity": 0.XX, "attainability": 0.XX, "reasoning": "under 10 words"}}"""
+Scale guide for each:
+  0.05-0.15 = very poor | 0.15-0.35 = poor | 0.35-0.55 = moderate
+  0.55-0.75 = good      | 0.75-0.95 = very good
+
+Return ONLY this JSON on one line:
+{{"relevance": 0.XX, "coherence": 0.XX, "integrity": 0.XX, "attainability": 0.XX, "reasoning": "max 15 words"}}"""
 
 
 def extract_json(text):
@@ -58,7 +75,7 @@ def call_ollama(prompt):
         "model"  : MODEL_NAME,
         "prompt" : prompt,
         "stream" : False,
-        "options": {"temperature": 0.3, "num_predict": 120, "num_ctx": 2048, "top_p": 0.9},
+        "options": {"temperature": 0.3, "num_predict": 200, "top_p": 0.9},
     }).encode("utf-8")
     req = urllib.request.Request(
         OLLAMA_URL, data=payload,
