@@ -91,5 +91,5 @@ if "period_id" in df.columns:
 else:
     print("\nCould not create snapshot because period_id is missing.")
 
-print("\n✓ Load + inspection complete")
+print("\n Load + inspection complete")
 print("=" * 70)
