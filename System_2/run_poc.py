@@ -21,24 +21,24 @@ VARIANTS = []
 if RUN_ELASTIC:
     VARIANTS.append({
         "name" : "ElasticNet",
-        "meta" : "04_meta_learner_poc.py",
-        "shap" : "05_explanations_poc.py",
-        "demo" : "06_demo_poc.py",
+        "meta" : "Pipeline/04_meta_learner_poc.py",
+        "shap" : "Pipeline/05_explanations_poc.py",
+        "demo" : "Pipeline/06_demo_poc.py",
         "env"  : "elastic",
     })
 if RUN_RIDGE:
     VARIANTS.append({
         "name" : "Ridge",
-        "meta" : "04_meta_learner_poc_ridge.py",
-        "shap" : "05_explanations_poc.py",
-        "demo" : "06_demo_poc.py",
+        "meta" : "Pipeline/04_meta_learner_poc_ridge.py",
+        "shap" : "Pipeline/05_explanations_poc.py",
+        "demo" : "Pipeline/06_demo_poc.py",
         "env"  : "ridge",
     })
 
 SHARED = [
-    "01_load_data.py",
-    "02_feature_engineering_poc.py",
-    "03_llm_predictions_poc.py",
+    "Pipeline/01_load_data.py",
+    "Pipeline/02_feature_engineering_poc.py",
+    "Pipeline/03_llm_predictions_poc.py",
 ]
 
 

@@ -1,0 +1,11 @@
+trailing_6_period_slope
+variance_from_target
+delivered_output_quality_score
+delivered_output_quantity
+allocation_percentage_of_parent
+volatility_measure
+target_value_final_period
+observed_value
+allocated_amount
+allocated_time_hours
+status_band_encoded
