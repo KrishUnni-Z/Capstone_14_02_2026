@@ -1,0 +1,54 @@
+bucket_id,parent_bucket_id,projection_id,bucket_name,bucket_level,allocation_percentage_of_parent,allocation_percentage_of_total,is_leaf
+1,,1,Marketing,1,1.0,0.4,False
+2,,1,Product,1,1.0,0.35,False
+3,,1,Operations,1,1.0,0.15,False
+4,,1,G&A,1,1.0,0.1,False
+5,1,1,Paid Acquisition,2,0.35,0.1399999999999999,False
+6,1,1,Content & SEO,2,0.25,0.1,False
+7,1,1,Partnerships,2,0.25,0.1,False
+8,1,1,Events & Community,2,0.15,0.06,False
+9,2,1,Core Platform,2,0.4,0.1399999999999999,False
+10,2,1,New Features,2,0.3,0.105,False
+11,2,1,Technical Debt,2,0.2,0.0699999999999999,False
+12,2,1,Research & Innovation,2,0.1,0.0349999999999999,False
+13,3,1,Customer Success,2,0.4,0.06,False
+14,3,1,Infrastructure & DevOps,2,0.35,0.0525,False
+15,3,1,Data & Analytics,2,0.25,0.0375,False
+16,4,1,Finance & Legal,2,0.4,0.04,False
+17,4,1,HR & Recruiting,2,0.35,0.0349999999999999,False
+18,4,1,General Admin,2,0.25,0.025,False
+19,5,1,Google Ads - Search,3,0.4,0.0559999999999999,True
+20,5,1,Google Ads - Display,3,0.25,0.0349999999999999,True
+21,5,1,Social Media Ads,3,0.35,0.0489999999999999,True
+22,6,1,Blog Content Production,3,0.35,0.0349999999999999,True
+23,6,1,SEO Optimization,3,0.35,0.0349999999999999,True
+24,6,1,Video Content,3,0.3,0.03,True
+25,7,1,Partner Acquisition,3,0.45,0.045,True
+26,7,1,Co-Marketing Campaigns,3,0.3,0.03,True
+27,7,1,Channel Partnerships,3,0.25,0.025,True
+28,8,1,Virtual Events,3,0.4,0.024,True
+29,8,1,In-Person Events,3,0.35,0.0209999999999999,True
+30,8,1,Community Management,3,0.25,0.015,True
+31,9,1,Backend Services,3,0.4,0.0559999999999999,True
+32,9,1,Frontend Development,3,0.35,0.0489999999999999,True
+33,9,1,APIs & Integrations,3,0.25,0.0349999999999999,True
+34,10,1,Feature Development,3,0.5,0.0525,True
+35,10,1,A/B Testing,3,0.3,0.0315,True
+36,10,1,Feature Launch,3,0.2,0.021,True
+37,11,1,Code Refactoring,3,0.55,0.0385,True
+38,11,1,Infrastructure Upgrades,3,0.45,0.0315,True
+39,12,1,Proof of Concepts,3,0.6,0.0209999999999999,True
+40,12,1,Innovation Labs,3,0.4,0.0139999999999999,True
+41,13,1,Onboarding,3,0.4,0.024,True
+42,13,1,Support Tickets,3,0.35,0.0209999999999999,True
+43,13,1,Account Management,3,0.25,0.015,True
+44,14,1,Cloud Infrastructure,3,0.55,0.028875,True
+45,14,1,CI/CD Pipeline,3,0.45,0.023625,True
+46,15,1,Data Engineering,3,0.45,0.016875,True
+47,15,1,Analytics & Reporting,3,0.55,0.020625,True
+48,16,1,Financial Planning,3,0.55,0.022,True
+49,16,1,Legal & Compliance,3,0.45,0.018,True
+50,17,1,Talent Acquisition,3,0.5,0.0174999999999999,True
+51,17,1,Employee Development,3,0.5,0.0174999999999999,True
+52,18,1,Office Operations,3,0.5,0.0125,True
+53,18,1,Vendor Management,3,0.5,0.0125,True
