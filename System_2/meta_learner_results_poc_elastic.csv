@@ -1,0 +1,2 @@
+model,loo_mae,loo_rmse,loo_r2,train_r2,train_mae,n_samples,n_features
+ElasticNet,0.1539,0.2648,,0.6994,0.0286,10,12

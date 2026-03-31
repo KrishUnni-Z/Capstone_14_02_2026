@@ -1,0 +1,11 @@
+goal_idx,llm_relevance,llm_coherence,llm_integrity,llm_attainability,reasoning,attempts,success
+0,0.08,0.33,0.51,0.1861,Current value below target; trend improving but still far from goal,1,True
+1,0.09,0.09,0.35,0.3399,"Current value below target, trend indicates slow progress.",1,True
+2,0.3,0.47,0.52,0.95,"Current value close to target, but gap remains; projected @ P24 indicates potential over-achievement",1,True
+3,0.92,0.94,0.53,0.221,Relevant and coherent allocation with moderate integrity; attainability uncertain,1,True
+4,0.08,0.09,0.57,0.3573,"Current value below target, trend improving but still far off",1,True
+5,0.09,0.09,0.41,0.1358,"Current value is below target, trend is positive but slow.",1,True
+6,0.08,0.18,0.54,0.1244,"Current value below target, trend positive but slow",1,True
+7,0.95,0.6,0.53,0.561,Relevance high due to justified allocation; Coherence moderate with mixed signals; Integrity moderate with partial delivery; Attainability uncertain,1,True
+8,0.09,0.43,0.41,0.25,Current value below target; trend and projected values indicate slow progress,1,True
+9,0.09,0.37,0.55,0.8356,Current value close to target; trend indicates continued progress.,1,True

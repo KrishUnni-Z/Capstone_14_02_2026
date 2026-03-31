@@ -13,7 +13,7 @@ print("DECIDR SYSTEM 2 — PoC")
 print("01  Load data")
 print("=" * 70)
 
-df = pd.read_csv("analytical_flat.csv")
+df = pd.read_csv("data/analytical_flat.csv")
 
 print(f"\nTotal rows    : {len(df)}")
 print(f"Total columns : {len(df.columns)}")
