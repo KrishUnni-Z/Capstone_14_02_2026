@@ -1,2 +1,0 @@
-model,loo_mae,loo_rmse,loo_r2,train_r2,train_mae,n_samples,n_features
-Ridge,0.3851,0.6969,,0.8699,0.0201,10,12
