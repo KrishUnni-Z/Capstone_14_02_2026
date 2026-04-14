@@ -64,10 +64,12 @@ feat_cols = [c for c in features_full.columns
 X_full    = features_full[feat_cols].values
 
 # Use goal_id merge for safe indexing (not positional iloc)
-valid_mask  = llm_preds["success"].astype(bool)
+# For GP training alignment, use period 12 predictions only
+llm_p12     = llm_preds[llm_preds["period_id"] == 12].reset_index(drop=True)               if "period_id" in llm_preds.columns else llm_preds
+valid_mask  = llm_p12["success"].astype(bool)
 n_valid     = valid_mask.sum()
-llm_valid   = llm_preds[valid_mask].reset_index(drop=True)
-valid_goal_ids = llm_valid["goal_idx"].astype(int).values   # these are 0-based row indices
+llm_valid   = llm_p12[valid_mask].reset_index(drop=True)
+valid_goal_ids = llm_valid["goal_idx"].astype(int).values   # 0-based row indices
 
 # Align all per-goal tables by positional index (0-34, matches period_12 row order)
 valid_idx   = valid_goal_ids
@@ -84,17 +86,32 @@ print(f"\nGround truth: mean={y_p12.mean():.3f}  std={y_p12.std():.3f}  "
 print(f"\nModel availability:")
 for m in MODELS:
     col = f"{m}_success"
-    n   = int(llm_valid[col].sum()) if col in llm_valid.columns else 0
-    print(f"  {m:<10}: {n}/{n_valid}")
+    n_p12 = int(llm_valid[col].sum()) if col in llm_valid.columns else 0
+    n_all = int(llm_preds[col].sum()) if col in llm_preds.columns else 0
+    print(f"  {m:<10}: {n_p12}/{n_valid} at p12  |  {n_all}/{len(llm_preds)} across all periods")
 
-# ── All-period feature matrix (predict across all 24 periods) ────────────────
+# Multi-period calibration data — use all 4 snapshot periods
+df_gt = pd.read_csv("analytical_flat.csv")[["goal_id","period_id","probability_of_hitting_target"]].copy()
+df_gt.columns = ["goal_id","period_id","y_true"]
+
+# Add goal_id to llm_preds if missing — map from goal_idx via period_12
+if "goal_id" not in llm_preds.columns and "goal_idx" in llm_preds.columns:
+    goal_id_map = dict(enumerate(period_12["goal_id"].values))
+    llm_preds["goal_id"] = llm_preds["goal_idx"].map(goal_id_map)
+    print(f"  Mapped goal_idx → goal_id in llm_preds")
+
+if "goal_id" in llm_preds.columns:
+    llm_calibration_df = llm_preds.merge(df_gt, on=["goal_id","period_id"], how="inner")
+    print(f"  Multi-period calibration: {len(llm_calibration_df)} rows across {llm_preds['period_id'].nunique()} periods")
+else:
+    llm_calibration_df = llm_valid.copy()
+    llm_calibration_df["y_true"] = y_p12
+    print(f"  Fallback: period 12 calibration only ({len(llm_calibration_df)} rows)")
+
+# ── All-period feature matrix ────────────────────────────────────────────────
 X_all_periods = features_full[feat_cols].values   # 840 rows
 X_p12_all     = features_full[features_full["period_id"] == 12][feat_cols].values
 X_p12_valid   = X_p12_all[valid_idx]
-# GP predictions for all 840 rows
-gp_mean_all, gp_std_all = gp.predict(X_all_periods, return_std=True)
-gp_mean_all = np.clip(gp_mean_all + baseline_mean, 0, 1)
-gp_std_all  = np.clip(gp_std_all, 0, 1)
 
 # ── Residual baseline ─────────────────────────────────────────────────────────
 def compute_baseline_arr(df):
@@ -173,6 +190,16 @@ print(f"\nGP period 12: mean={gp_mean.mean():.3f}  "
       f"std=[{gp_std.min():.4f},{gp_std.max():.4f}]  "
       f"uncertain={( gp_std > GP_UNCERTAINTY_FLAG).sum()}/{len(gp_std)}")
 
+# GP predictions for all 840 rows (now that gp is trained)
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    gp_mean_all_raw, gp_std_all = gp.predict(X_all_periods, return_std=True)
+baseline_all = compute_baseline_arr(df_full)
+gp_mean_all  = np.clip(baseline_all + gp_mean_all_raw, 0, 1)
+gp_std_all   = np.clip(gp_std_all, 0, 1)
+print(f"GP all 840 rows: mean={gp_mean_all.mean():.3f}  "
+      f"uncertain={(gp_std_all > GP_UNCERTAINTY_FLAG).sum()}/840")
+
 # ══════════════════════════════════════════════════════════════════════════════
 # ISOTONIC CALIBRATION
 # ══════════════════════════════════════════════════════════════════════════════
@@ -186,29 +213,43 @@ calibrated_llm = {}
 for m in ATTAIN_MODELS:
     col    = f"{m}_attainability"
     ok_col = f"{m}_success"
-    if col not in llm_valid.columns: continue
-    raw_vals = llm_valid[col].values
-    ok_mask  = llm_valid[ok_col].values.astype(bool) \
-               if ok_col in llm_valid.columns else np.ones(len(raw_vals), dtype=bool)
-    if ok_mask.sum() < 5:
-        calibrated_llm[m] = raw_vals; continue
 
-    X_cal    = raw_vals[ok_mask]
-    y_cal    = y_p12[ok_mask]
-    sort_idx = np.argsort(X_cal)
+    # Use multi-period calibration data if available
+    if col in llm_calibration_df.columns:
+        ok_mask_cal = llm_calibration_df[ok_col].values.astype(bool)                       if ok_col in llm_calibration_df.columns                       else np.ones(len(llm_calibration_df), dtype=bool)
+        X_cal_full  = llm_calibration_df[col].values[ok_mask_cal]
+        y_cal_full  = llm_calibration_df["y_true"].values[ok_mask_cal]
+        n_cal       = ok_mask_cal.sum()
+    elif col in llm_valid.columns:
+        ok_mask_cal = llm_valid[ok_col].values.astype(bool)                       if ok_col in llm_valid.columns                       else np.ones(len(llm_valid), dtype=bool)
+        X_cal_full  = llm_valid[col].values[ok_mask_cal]
+        y_cal_full  = y_p12[ok_mask_cal]
+        n_cal       = ok_mask_cal.sum()
+    else:
+        continue
+
+    if n_cal < 5:
+        calibrated_llm[m] = llm_valid[col].values if col in llm_valid.columns else None
+        continue
+
+    sort_idx = np.argsort(X_cal_full)
     iso      = IsotonicRegression(out_of_bounds="clip")
-    iso.fit(X_cal[sort_idx], y_cal[sort_idx])
+    iso.fit(X_cal_full[sort_idx], y_cal_full[sort_idx])
+    iso_scalers[m] = iso
 
-    cal_vals          = np.full(len(raw_vals), np.nan)
-    cal_vals[ok_mask] = iso.predict(raw_vals[ok_mask])
-    cal_vals[~ok_mask]= gp_mean[~ok_mask]
-
-    iso_scalers[m]    = iso
-    calibrated_llm[m] = cal_vals
-    cal_mae = mean_absolute_error(y_cal, cal_vals[ok_mask])
-    print(f"  {m:<10}: raw={raw_vals[ok_mask].mean():.3f}  "
-          f"calibrated={cal_vals[ok_mask].mean():.3f}  "
-          f"gt={y_cal.mean():.3f}  MAE={cal_mae:.4f}")
+    # Apply calibration to period 12 values for blend
+    if col in llm_valid.columns:
+        raw_vals_p12       = llm_valid[col].values
+        ok_mask_p12        = llm_valid[ok_col].values.astype(bool)                              if ok_col in llm_valid.columns                              else np.ones(len(raw_vals_p12), dtype=bool)
+        cal_vals           = np.full(len(raw_vals_p12), np.nan)
+        cal_vals[ok_mask_p12]  = iso.predict(raw_vals_p12[ok_mask_p12])
+        cal_vals[~ok_mask_p12] = gp_mean[~ok_mask_p12]
+        calibrated_llm[m]      = cal_vals
+        cal_mae = mean_absolute_error(y_cal_full, iso.predict(X_cal_full))
+        print(f"  {m:<10}: raw={X_cal_full.mean():.3f}  "
+              f"calibrated={cal_vals[ok_mask_p12].mean():.3f}  "
+              f"gt={y_cal_full.mean():.3f}  MAE={cal_mae:.4f}  "
+              f"(calibrated on {n_cal} rows, {llm_preds['period_id'].nunique()} periods)")
 
 # ══════════════════════════════════════════════════════════════════════════════
 # ATTAINABILITY BLEND
@@ -446,12 +487,13 @@ full_preds["uncertain"] = gp_std_all > GP_UNCERTAINTY_FLAG
 # Join LLM scores where available (at snapshot periods)
 for m in ATTAIN_MODELS:
     col = f"{m}_attainability"
-    if col in llm_preds.columns:
-        llm_by_period = llm_preds[["goal_idx","period_id",col]].copy()
-        llm_by_period.columns = ["goal_idx","period_id",f"llm_{m}"]
+    if col in llm_preds.columns and "goal_id" in llm_preds.columns:
+        llm_by_period = llm_preds[["goal_id","period_id",col]].copy()
+        llm_by_period.columns = ["goal_id","period_id",f"llm_{m}"]
+        # Merge on goal_id + period_id — clean, no cartesian product
         full_preds = full_preds.merge(
-            llm_by_period, on=["period_id"], how="left"
-        ) if "goal_idx" not in full_preds.columns else full_preds
+            llm_by_period, on=["goal_id","period_id"], how="left"
+        )
 
 # Attainability: GP mean for all periods, blended with LLM at snapshot periods
 full_preds["attainability"] = np.clip(full_preds["gp_mean"], 0, 1)
