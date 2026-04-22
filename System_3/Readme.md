@@ -1,27 +1,28 @@
-# Decidr Coherence Engine — Presentation Layer
+
+# Decidr Coherence Engine — Data Layer
 **Team 14-02 | iLab Capstone 36127 | UTS MDSI**
 
 ---
 
 ## Overview
 
-The Presentation Layer reads the scored output CSVs produced by System 2
-(Intelligence Core) and renders them as an interactive Streamlit dashboard.
-No LLM calls, no scoring logic — purely visualisation and user interaction.
+The Data Layer is responsible for loading, validating, and transforming the
+raw source data into engineered feature CSVs that System 2 (Intelligence Core)
+consumes for scoring.
 
 ```
-[System 2 Output CSVs]
-  composite_scores_poc.csv
-  coherence_timeseries_poc.csv
-  portfolio_timeseries_poc.csv
-  meta_learner_predictions_full.csv
-  forward_projection_poc.csv
-  portfolio_summary_poc.csv
+[Raw Source CSVs — 8 files]
+  analytical_flat.csv, buckets.csv, goals.csv, allocations.csv
+  outputs.csv, metrics.csv, derived_fields.csv, periods.csv
         ↓
-[Presentation Layer — This Repo]
-  Streamlit Dashboard
+[Data Layer — This Repo]
+  load_data.py → feature_engineering.py → infer_dependencies.py
         ↓
-[User — Browser at localhost:8501]
+[Output CSVs — consumed by System 2]
+  features_raw_p6/12/18/24.csv
+  rule_scores_p6/12/18/24.csv
+  goal_dependencies.csv
+  features_full_normalized.csv
 ```
 
 ---
@@ -30,57 +31,71 @@ No LLM calls, no scoring logic — purely visualisation and user interaction.
 
 | File | Purpose |
 |------|---------|
-| `dashboard_app.py` | Main Streamlit app — all dashboard panels |
-| `explanations.py` | GP feature importance and calibration charts (static PNGs) |
-| `dashboard.py` | Legacy 6-panel static dashboard (PNG output) |
+| `load_data.py` | Validates all 8 source CSVs, extracts period snapshots |
+| `feature_engineering.py` | Builds 33 engineered features, computes rule scores at 4 periods |
+| `infer_dependencies.py` | Infers cross-goal dependencies via llama3, saves dependency map |
 
 ---
 
-## Dashboard Panels
+## Features Produced (33 total)
 
-**Panel 1 — Portfolio Health Overview**
-KPI cards: overall coherence score, at-risk goal count, goal retention rate
-at period 24, weakest bucket. Snapshot at period 12.
+**Attainability signals:**
+`trailing_6_period_slope`, `variance_from_target`, `volatility_measure`,
+`time_to_green_estimate`
 
-**Panel 2 — Coherence Over Time**
-Line chart across all 24 periods. Vertical markers at periods 10-12
-(budget shock) and 14-17 (market shock). Shows coherence drop and recovery.
+**Relevance signals:**
+`allocation_percentage_of_parent`, `optimal_band_distance`, `sibling_rank_pct`,
+`scenario_encoded`, `allocation_fitness_score`
 
-**Panel 3 — Goal Breakdown**
-Heatmap of all 35 goals × 4 dimensions. Colour coded by score.
-Filterable by bucket, scenario story, at-risk status.
+**Coherence signals:**
+`l3_share_of_l2`, `l3_share_of_l1`, `alloc_drift_std`,
+`weighted_goal_status_score`, `status_band_unique`
 
-**Panel 4 — Shock Analysis**
-Pre-shock (periods 7-9) vs during-shock (10-12) vs post-shock (13-17)
-coherence per bucket. Which buckets were most affected.
+**Integrity signals:**
+`delivered_output_quality_score`, `delivered_output_quantity`,
+`allocation_efficiency_ratio`, `needle_move_ratio`, `output_cost_per_unit`
 
-**Panel 5 — Forward Projection**
-Per-goal trajectory at +6 and +12 periods. Improving vs degrading.
+**Dependency signals:**
+`n_dependencies`, `n_dependents`, `dependency_risk_encoded`, `dep_avg_attain`
 
-**Panel 6 — Reallocation Recommendations**
-Under 20% budget cut scenario — which goals to protect and which to cut
-based on composite score, scenario story, and recovery trajectory.
+**Shock signals:**
+`budget_shock_exposure`, `shock_alloc_impact`, `recovery_period_estimate`,
+`market_shock_vulnerable`, `market_shock_forward_risk`, `recovery_window_remaining`
+
+**Additional:**
+`observed_value`, `allocated_amount`, `allocated_time_hours`
+
+---
+
+## Shock Parameters (configurable)
+
+In `feature_engineering.py`:
+```python
+BUDGET_SHOCK_PERIODS  = {10, 11, 12}   # 20% budget reduction
+MARKET_SHOCK_PERIOD   = 14             # 15% growth metric reduction
+MARKET_RECOVERY_END   = 17             # recovery complete by period 17
+RECOVERY_SPEED_FACTOR = 1.0            # increase to assume faster recovery
+```
 
 ---
 
 ## Setup
 
-**Install dependencies:**
-```bash
-pip install streamlit pandas numpy matplotlib plotly
+**Required source CSVs (place in same folder):**
+```
+analytical_flat.csv    buckets.csv      goals.csv
+allocations.csv        outputs.csv      metrics.csv
+derived_fields.csv     periods.csv
 ```
 
-**Required input files (produced by System 2):**
+**Install dependencies:**
+```bash
+pip install pandas numpy scikit-learn python-dotenv
 ```
-composite_scores_poc.csv
-coherence_timeseries_poc.csv
-portfolio_timeseries_poc.csv
-meta_learner_predictions_full.csv
-forward_projection_poc.csv
-portfolio_summary_poc.csv
-goal_dependencies.csv
-goals.csv
-buckets.csv
+
+**Ollama needed for infer_dependencies.py:**
+```bash
+ollama pull llama3:latest
 ```
 
 ---
@@ -88,54 +103,42 @@ buckets.csv
 ## Running
 
 ```bash
-streamlit run dashboard_app.py
+python load_data.py           # step 1 — validate and load
+python feature_engineering.py # step 2 — build features
+python infer_dependencies.py  # step 3 — infer dependencies
 ```
 
-Opens at `http://localhost:8501`
-
----
-
-## Input File Schemas
-
-**composite_scores_poc.csv** — one row per goal at period 12
-```
-goal_id, l2_name, l1_name
-attainability, relevance, coherence, integrity
-composite, composite_adjusted
-at_risk, critical, weakest_dim, weakest_score
-verified_composite, verified, flags, narrative
-```
-
-**coherence_timeseries_poc.csv** — one row per period
-```
-period_id, avg_composite, at_risk_count,
-avg_coherence, avg_attainability
-```
-
-**portfolio_timeseries_poc.csv** — one row per period per bucket
-```
-period_id, l2_name, l1_name,
-n_goals, avg_composite, at_risk_count
-```
-
-**meta_learner_predictions_full.csv** — 840 rows (35 goals × 24 periods)
-```
-goal_id, period_id
-attainability, relevance, coherence, integrity, overall
-gp_mean, gp_std, uncertain
+Or via the full pipeline runner in System 2:
+```bash
+python run.py   # runs all steps in order
 ```
 
 ---
 
-## Notes
+## Output Files
 
-Do not modify any of the input CSV schemas — these are produced by System 2
-and any schema change needs to be coordinated with Team 14-02.
+| File | Rows | Description |
+|------|------|-------------|
+| `features_raw_p6.csv` | 35 | Features at period 6 snapshot |
+| `features_raw_p12.csv` | 35 | Features at period 12 snapshot |
+| `features_raw_p18.csv` | 35 | Features at period 18 snapshot |
+| `features_raw_p24.csv` | 35 | Features at period 24 snapshot |
+| `features_raw_poc.csv` | 35 | Alias for period 12 (backward compat) |
+| `rule_scores_p6/12/18/24.csv` | 35 each | Rule-based R/C/I anchors per period |
+| `rule_scores_poc.csv` | 35 | Alias for period 12 rule scores |
+| `features_full_normalized.csv` | 840 | All periods normalised (GP training) |
+| `features_full_raw.csv` | 840 | All periods raw |
+| `period_12_poc.csv` | 35 | Period 12 full row snapshot |
+| `goal_dependencies.csv` | 35 | Cross-goal dependency map |
+| `analytical_full.csv` | 840 | Validated flat table |
 
-If System 2 adds new fields to the output (e.g. shock flags, dependency fields)
-the dashboard can optionally display them but should not break if they are absent.
-Use `.get()` or check column existence before reading any new field.
+---
 
-The `narrative` field in `composite_scores_poc.csv` contains a natural language
-summary produced by the deepseek verifier. This can be surfaced directly to users
-without any further processing.
+## Notes for System 2
+
+System 2 reads these files directly. File names must match exactly.
+If you add new features, also update `FEATURES` list in `feature_engineering.py`
+so they are included in the normalised output for the GP.
+
+The `rule_scores_poc.csv` file must contain at minimum:
+`goal_id`, `relevance_rule`, `coherence_rule`, `integrity_rule`, `attainability_label`
