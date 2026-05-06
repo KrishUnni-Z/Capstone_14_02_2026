@@ -1905,7 +1905,7 @@ elif st.session_state.page == "portfolio":
     with hero_col:
         st.markdown("""
         <div class="hero-panel">
-            <div class="hero-title">Decidr Coherence Engine</div>
+            <div class="hero-title">Decidr Lens</div>
             <div class="hero-subtitle">Portfolio health dashboard</div>
         </div>
         """, unsafe_allow_html=True)
