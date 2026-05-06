@@ -63,7 +63,7 @@ st.set_page_config(
 )
  
 # ═════════════════════════════════════════════════════════════════════════════
-#  THEME — Subhan's slate/blue base + input-half component extensions
+#  THEME — slate/blue base + input-half component extensions
 # ═════════════════════════════════════════════════════════════════════════════
 st.markdown("""
 <style>
