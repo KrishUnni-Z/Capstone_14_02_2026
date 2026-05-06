@@ -1,0 +1,63 @@
+{
+  "method": "CoherenceEngine_v9",
+  "kernel": "SlicedProduct(1.02**2 * Matern(length_scale=3.63, nu=1.5) \u00d7 RBF(length_scale=0.5)) + WhiteKernel(noise_level=0.0102)",
+  "gp_uncertainty_scale": 50.0,
+  "gp_uncertainty_flag": 0.15,
+  "models": [
+    "llama",
+    "mistral"
+  ],
+  "attain_models": [
+    "llama",
+    "mistral"
+  ],
+  "dims_blend": [
+    "relevance",
+    "coherence",
+    "integrity"
+  ],
+  "dim_gp": "attainability",
+  "feature_names": [
+    "trailing_6_period_slope",
+    "variance_from_target",
+    "volatility_measure",
+    "time_to_green_estimate",
+    "allocation_percentage_of_parent",
+    "optimal_band_distance",
+    "sibling_rank_pct",
+    "scenario_encoded",
+    "allocation_fitness_score",
+    "l3_share_of_l2",
+    "l3_share_of_l1",
+    "alloc_drift_std",
+    "weighted_goal_status_score",
+    "status_band_unique",
+    "delivered_output_quality_score",
+    "delivered_output_quantity",
+    "allocation_efficiency_ratio",
+    "needle_move_ratio",
+    "output_cost_per_unit",
+    "n_dependencies",
+    "n_dependents",
+    "dependency_risk_encoded",
+    "dep_avg_attain",
+    "observed_value",
+    "allocated_amount",
+    "allocated_time_hours",
+    "budget_shock_exposure",
+    "shock_alloc_impact",
+    "recovery_period_estimate",
+    "recovery_window_remaining",
+    "market_shock_vulnerable",
+    "market_shock_forward_risk",
+    "period_id_scaled",
+    "market_shock_period",
+    "status_band_encoded"
+  ],
+  "eval_periods": [
+    12,
+    18
+  ],
+  "gkf_r2": 0.1729,
+  "gkf_mae": 0.0609
+}

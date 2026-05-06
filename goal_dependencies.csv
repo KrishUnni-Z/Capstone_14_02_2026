@@ -1,0 +1,36 @@
+goal_id,n_dependencies,n_dependents,dependency_risk,depends_on_ids,depended_on_by_ids,dep_avg_attain,rationale
+1,2,1,medium,"[4, 5]",[3],0.1,Organic traffic and SEO ranking are required to drive performance in Google Ads - Search.
+2,2,1,medium,"[4, 5]",[3],0.1,Organic traffic and SEO ranking are required to drive performance in Google Ads - Display.
+3,2,0,medium,"[1, 2]",[],0.1,Paid acquisition performance on Google Ads and social media ads are required to drive ROAS.
+4,1,2,low,[5],"[1, 2]",0.1,SEO optimization is required to grow organic website traffic.
+5,1,3,low,[6],"[1, 2, 4]",0.1,Video content engagement supports SEO ranking improvements.
+6,0,1,none,[],[5],-1.0,Video content engagement is a standalone goal.
+7,0,2,none,[],"[8, 9]",-1.0,Partner acquisition is a standalone goal.
+8,1,1,low,[7],[9],0.1,Co-marketing ROI depends on having an established partner network.
+9,2,0,medium,"[7, 8]",[],0.1,Channel revenue depends on partner acquisition and successful co-marketing campaigns.
+10,0,1,none,[],[12],-1.0,Virtual event attendance is a standalone goal.
+11,0,1,none,[],[12],-1.0,In-person event lead generation is a standalone goal.
+12,2,0,medium,"[10, 11]",[],0.1,Community engagement is driven by both virtual and in-person events.
+13,0,1,none,[],[15],-1.0,API response time is a standalone goal.
+14,0,1,none,[],[15],-1.0,Page load time is a standalone goal.
+15,2,0,medium,"[13, 14]",[],0.1,API and frontend performance are required for APIs and integrations to function well.
+16,2,0,medium,"[17, 18]",[],0.1,Feature adoption depends on successful A/B testing and feature launches.
+17,0,1,none,[],[16],-1.0,A/B testing is a standalone goal.
+18,0,1,none,[],[16],-1.0,Feature launch success is a standalone goal.
+19,1,0,low,[20],[],0.1,Infrastructure upgrades are required to maintain high code quality.
+20,0,1,none,[],[19],-1.0,System uptime is a standalone goal.
+21,1,0,low,[22],[],0.1,The innovation pipeline feeds the proof of concept process.
+22,0,1,none,[],[21],-1.0,The innovation pipeline is a standalone goal.
+23,2,0,medium,"[24, 25]",[],0.1,Onboarding time to value depends on support ticket resolution and account management.
+24,0,1,none,[],[23],-1.0,Support ticket resolution time is a standalone goal.
+25,0,1,none,[],[23],-1.0,NPS score is a standalone goal.
+26,0,3,none,[],"[27, 28, 34]",-1.0,Infrastructure reliability is a standalone goal.
+27,1,1,low,[26],[34],0.1,CI/CD pipeline performance depends on reliable infrastructure.
+28,1,2,low,[26],"[29, 34]",0.1,Data pipeline reliability depends on reliable infrastructure.
+29,1,0,low,[28],[],0.1,Analytics and reporting performance depends on reliable data pipelines.
+30,0,1,none,[],[31],-1.0,Budget variance is a standalone goal.
+31,1,1,low,[30],[35],0.1,Legal and compliance performance depends on sound financial planning.
+32,0,1,none,[],[33],-1.0,Time to hire is a standalone goal.
+33,1,0,low,[32],[],0.1,Employee satisfaction depends on effective talent acquisition.
+34,3,0,high,"[26, 27, 28]",[],0.1,"Operational efficiency depends on reliable infrastructure, CI/CD, data pipelines, and analytics."
+35,1,0,low,[31],[],0.1,Vendor SLA compliance depends on effective legal and compliance management.

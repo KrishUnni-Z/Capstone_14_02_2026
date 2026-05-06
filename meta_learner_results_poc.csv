@@ -1,0 +1,2 @@
+model,gkf_mae,gkf_rmse,gkf_r2,eval_mae,n_train,n_eval,eval_periods,n_features,uncertain_goals,baseline_mae
+CoherenceEngine_v9,0.0609,0.095,0.1729,0.0235,840,70,"12,18",35,0,0.1992
