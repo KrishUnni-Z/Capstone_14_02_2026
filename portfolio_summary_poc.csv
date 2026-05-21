@@ -1,0 +1,15 @@
+l2_name,l1_name,n_goals,avg_composite,min_composite,avg_attainability,avg_relevance,avg_coherence,avg_integrity,at_risk_count,critical_count,uncertain_count,risk_pct
+Infrastructure & DevOps,Operations,2,0.316,0.309,0.131,0.255,0.521,0.355,2,0,0,100.0
+Events & Community,Marketing,3,0.344,0.275,0.108,0.4,0.567,0.369,2,0,0,66.7
+Technical Debt,Product,2,0.369,0.34,0.112,0.479,0.578,0.358,1,0,0,50.0
+Core Platform,Product,3,0.374,0.319,0.12,0.392,0.593,0.392,1,0,0,33.3
+New Features,Product,3,0.378,0.327,0.108,0.397,0.568,0.473,1,0,0,33.3
+General Admin,G&A,2,0.382,0.3,0.105,0.442,0.66,0.371,1,0,0,50.0
+Content & SEO,Marketing,3,0.384,0.277,0.103,0.487,0.721,0.366,1,0,0,33.3
+Customer Success,Operations,3,0.385,0.341,0.106,0.483,0.661,0.355,1,0,0,33.3
+Paid Acquisition,Marketing,3,0.389,0.367,0.121,0.397,0.696,0.409,0,0,0,0.0
+Partnerships,Marketing,3,0.394,0.36,0.108,0.606,0.547,0.433,0,0,0,0.0
+HR & Recruiting,G&A,2,0.399,0.388,0.107,0.351,0.652,0.484,0,0,0,0.0
+Research & Innovation,Product,2,0.41,0.373,0.107,0.519,0.603,0.486,0,0,0,0.0
+Finance & Legal,G&A,2,0.418,0.363,0.119,0.583,0.524,0.445,0,0,0,0.0
+Data & Analytics,Operations,2,0.424,0.37,0.122,0.475,0.771,0.42,0,0,0,0.0
