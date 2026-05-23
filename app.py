@@ -716,7 +716,7 @@ def _per_goal_selector(comp_view, fwd, key_prefix, title="Drill into a goal", co
                 return float(v)
         return default
 
-    _cv = _safe(_row, "composite_adjusted", "verified_composite", "composite", "overall")
+    _cv = _safe(_row, "final_composite", "verified_composite", "composite_adjusted", "overall")
     _s = {
         "goal_id"      : _sel_gid,
         "overall"      : _cv,
