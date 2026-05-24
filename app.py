@@ -2825,7 +2825,8 @@ elif st.session_state.page == "portfolio":
             r1c2.metric("Goals stable (+6)",    _n_stb)
             r1c3.metric("Goals degrading (+6)", _n_deg)
             r1c4.metric("Goals at risk",
-                        int(fwd['at_risk'].sum()) if 'at_risk' in fwd.columns else "N/A")
+                        int((fwd['composite_adjusted'] < 0.35).sum())
+                        if 'composite_adjusted' in fwd.columns else "N/A")
 
             st.divider()
 
