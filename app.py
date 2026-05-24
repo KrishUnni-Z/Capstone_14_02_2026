@@ -2814,36 +2814,59 @@ elif st.session_state.page == "portfolio":
         st.divider()
 
         if fwd is not None and len(fwd) > 0:
-            col_a, col_b = st.columns(2)
 
-            with col_a:
-                st.metric("Goals improving (+6)", int(fwd['improving_p6'].sum()) if 'improving_p6' in fwd.columns else "N/A")
-                st.metric("Goals degrading (+6)", int(fwd['degrading_p6'].sum()) if 'degrading_p6' in fwd.columns else "N/A")
+            # ── Row 1: portfolio status ───────────────────────────────────
+            _n_imp = int(fwd['improving_p6'].sum()) if 'improving_p6' in fwd.columns else 0
+            _n_deg = int(fwd['degrading_p6'].sum()) if 'degrading_p6' in fwd.columns else 0
+            _n_stb = len(fwd) - _n_imp - _n_deg
 
-            with col_b:
-                _comp_mae = (fwd["composite_p6"] - fwd["composite_adjusted"]).abs().mean()
+            r1c1, r1c2, r1c3, r1c4 = st.columns(4)
+            r1c1.metric("Goals improving (+6)", _n_imp)
+            r1c2.metric("Goals stable (+6)",    _n_stb)
+            r1c3.metric("Goals degrading (+6)", _n_deg)
+            r1c4.metric("Goals at risk",
+                        int(fwd['at_risk'].sum()) if 'at_risk' in fwd.columns else "N/A")
 
-                st.metric("Composite MAE (p18→p24)", f"{_comp_mae:.4f}")
+            st.divider()
 
-                if 'coherence_error_p24' in fwd.columns:
-                    st.metric("Coherence MAE (p18→p24)", f"{fwd['coherence_error_p24'].dropna().mean():.4f}")
+            # ── Row 2: MAE metrics ────────────────────────────────────────
+            _comp_mae = (fwd["composite_p6"] - fwd["composite_adjusted"]).abs().mean()
 
-                if 'relevance_error_p24' in fwd.columns:
-                    st.metric("Relevance MAE (p18→p24)", f"{fwd['relevance_error_p24'].dropna().mean():.4f}")
+            _has_dim_errors = any(c in fwd.columns for c in
+                ['coherence_error_p24','relevance_error_p24',
+                 'integrity_error_p24','attain_error_p24'])
 
-                if 'integrity_error_p24' in fwd.columns:
-                    st.metric("Integrity MAE (p18→p24)", f"{fwd['integrity_error_p24'].dropna().mean():.4f}")
+            if _has_dim_errors:
+                m1, m2, m3, m4, m5, m6 = st.columns(6)
+                m1.metric("Composite MAE\np18→p24",    f"{_comp_mae:.4f}")
+                m2.metric("Coherence MAE\np18→p24",
+                          f"{fwd['coherence_error_p24'].dropna().mean():.4f}"
+                          if 'coherence_error_p24' in fwd.columns else "N/A")
+                m3.metric("Relevance MAE\np18→p24",
+                          f"{fwd['relevance_error_p24'].dropna().mean():.4f}"
+                          if 'relevance_error_p24' in fwd.columns else "N/A")
+                m4.metric("Integrity MAE\np18→p24",
+                          f"{fwd['integrity_error_p24'].dropna().mean():.4f}"
+                          if 'integrity_error_p24' in fwd.columns else "N/A")
+                m5.metric("Attainability MAE\np18→p24",
+                          f"{fwd['attain_error_p24'].dropna().mean():.4f}"
+                          if 'attain_error_p24' in fwd.columns else "N/A")
+                m6.metric("Benchmark", "0.272")
+            else:
+                m1, m2, m3 = st.columns(3)
+                m1.metric("Composite MAE (p18→p24)", f"{_comp_mae:.4f}")
+                m2.metric("Benchmark", "0.272")
+                m3.metric("Attainability MAE (p18→p24)",
+                          f"{fwd['attain_error_p24'].dropna().mean():.4f}"
+                          if 'attain_error_p24' in fwd.columns else "N/A")
 
-                if 'attain_error_p24' in fwd.columns:
-                    st.metric("Attainability MAE (p18→p24)", f"{fwd['attain_error_p24'].dropna().mean():.4f}")
-
-                st.metric("Benchmark", "0.272")
+            st.divider()
 
             projection_cols = [c for c in ['composite_adjusted','composite','composite_p6','composite_p12','actual_composite_p24'] if c in fwd.columns]
 
             if len(projection_cols) >= 2:
                 fig = go.Figure()
-                x = list(range(len(fwd)))
+                x = fwd["goal_id"].tolist()
                 name_map = {
                     'composite_adjusted': 'Period 18',
                     'composite': 'Current composite',
@@ -2855,6 +2878,8 @@ elif st.session_state.page == "portfolio":
                     fig.add_trace(go.Scatter(
                         x=x, y=fwd[col], mode='markers+lines',
                         name=name_map.get(col, col),
+                        customdata=fwd["goal_id"],
+                        hovertemplate="<b>G%{customdata}</b><br>Score: %{y:.4f}<extra>" + name_map.get(col, col) + "</extra>",
                     ))
                 fig.add_hline(y=0.35, line_dash="dash", line_color=COLORS['at_risk'])
                 fig.update_layout(
@@ -2862,7 +2887,7 @@ elif st.session_state.page == "portfolio":
                     paper_bgcolor="rgba(0,0,0,0)",
                     plot_bgcolor="rgba(0,0,0,0)",
                     title="",
-                    xaxis_title="Goal index",
+                    xaxis_title="Goal ID",
                     yaxis_title="Composite score",
                     yaxis_range=[0,1],
                     height=450,
